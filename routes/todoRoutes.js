@@ -2,7 +2,6 @@ const express = require('express');
 const Todo = require('../models/Todo');
 const router = express.Router();
 const authenticateToken = require('../middleware/authMiddleware')
-const {v4:uuidv4} = require('uuid')
 
 // Get all tasks for the authenticated user
 router.get('/todos', authenticateToken, async (req, res) => {
@@ -55,6 +54,36 @@ router.patch('/todo/:id', authenticateToken, async (req, res) => {
         res.status(400).json({ message: e.message });
     }
 });
+
+// Patch an existing task (only for updating is_complete field)
+router.patch('/todo/:id/complete', authenticateToken, async (req, res) => {
+    try {
+        const todo = await Todo.findOne({ _id: req.params.id });
+
+        if (!todo) {
+            return res.status(404).json({ message: 'Task not found.' });
+        }
+
+        // Vérification si la tâche appartient bien à l'utilisateur connecté
+        if (todo.user_id !== req.user.id) {
+            return res.status(403).json({ message: 'Forbidden. The task is not owned by user.' });
+        }
+
+        // Vérifier si la requête contient le champ is_complete
+        if (req.body.is_complete === undefined) {
+            return res.status(400).json({ message: 'is_complete field is required.' });
+        }
+
+        // Mettre à jour uniquement le champ is_complete
+        todo.is_complete = req.body.is_complete;
+        await todo.save();
+
+        res.status(200).json(todo);
+    } catch (e) {
+        res.status(400).json({ message: e.message });
+    }
+});
+
 
 
 // Remove a task only if user own it
