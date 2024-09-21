@@ -19,7 +19,6 @@ router.post('/register', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Vérifier si l'utilisateur existe déjà
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: "User already exists." });
@@ -50,7 +49,7 @@ router.post('/login', async (req, res) => {
         }
 
         // Vérifier le mot de passe
-        const isPasswordValid = await user.comparePassword(password); // Utiliser la méthode d'instance sur l'utilisateur
+        const isPasswordValid = await user.comparePassword(password);
         if (!isPasswordValid) {
             return res.status(400).json({ message: "Invalid password" });
         }
