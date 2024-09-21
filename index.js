@@ -16,9 +16,15 @@ const limiter = rateLimit({
     max: 20
 })
 
+const corsOption = {
+    origin: "https://todolist.maximekirch.com",
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true
+}
+
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOption));
 app.use(limiter);
 app.use(
     helmet.contentSecurityPolicy({
