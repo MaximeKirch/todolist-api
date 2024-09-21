@@ -35,19 +35,16 @@ router.post('/todos', authenticateToken,async(req, res) => {
 // Patch an existing task (only if user is the owner of this task
 router.patch('/todo/:id', authenticateToken, async (req, res) => {
     try {
-        // Correction de l'accès à l'ID dans req.params
         const todo = await Todo.findOne({ _id: req.params.id });
 
         if (!todo) {
             return res.status(404).json({ message: 'Task not found.' });
         }
 
-        // Vérification si la tâche appartient bien à l'utilisateur connecté
         if (todo.user_id !== req.user.id) {
             return res.status(403).json({ message: "Forbidden. The task is not owned by user." });
         }
 
-        // Mise à jour de la tâche si tout est correct
         const updatedTodo = await Todo.findByIdAndUpdate(todo._id, req.body, { new: true });
         res.status(200).json(updatedTodo);
     } catch (e) {
@@ -64,12 +61,10 @@ router.patch('/todo/:id/complete', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: 'Task not found.' });
         }
 
-        // Vérification si la tâche appartient bien à l'utilisateur connecté
         if (todo.user_id !== req.user.id) {
             return res.status(403).json({ message: 'Forbidden. The task is not owned by user.' });
         }
 
-        // Vérifier si la requête contient le champ is_complete
         if (req.body.is_complete === undefined) {
             return res.status(400).json({ message: 'is_complete field is required.' });
         }
@@ -89,19 +84,16 @@ router.patch('/todo/:id/complete', authenticateToken, async (req, res) => {
 // Remove a task only if user own it
 router.delete('/todo/:id', authenticateToken, async (req, res) => {
     try {
-        // Utiliser _id pour trouver la tâche (MongoDB utilise _id)
         const todo = await Todo.findById(req.params.id);
 
         if (!todo) {
             return res.status(404).json({ message: "Task not found" });
         }
 
-        // Comparer user_id de la tâche avec l'ID de l'utilisateur extrait du token
         if (todo.user_id.toString() !== req.user.id) {
             return res.status(403).json({ message: "Forbidden. The task is not owned by user." });
         }
 
-        // Supprimer la tâche
         await Todo.findByIdAndDelete(req.params.id);
         res.status(200).json({ message: "Todo deleted." });
 
